@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import HRLoadingScreen from "./components/common/HRLoadingScreen";
 import DashboardLayout from "./components/layout/DashboardLayout";
@@ -10,8 +10,19 @@ import Analytics from "./pages/Analytics";
 import RiskPrediction from "./pages/RiskPrediction";
 import EmployeeProfile from "./pages/EmployeeProfile";
 import Settings from "./pages/Settings";
+import { useAuth } from "./context/AuthContext";
 
-function App() {
+function ProtectedRoutes() {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <DashboardLayout />;
+}
+
+function AppRoutes() {
   const [loading, setLoading] = useState(true);
 
   if (loading) {
@@ -24,11 +35,9 @@ function App() {
 
   return (
     <Routes>
-      {/* Sign In page - available separately */}
       <Route path="/login" element={<Login />} />
 
-      {/* Main dashboard - opens directly */}
-      <Route element={<DashboardLayout />}>
+      <Route element={<ProtectedRoutes />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/employees" element={<Employees />} />
         <Route path="/analytics" element={<Analytics />} />
@@ -37,19 +46,12 @@ function App() {
         <Route path="/settings" element={<Settings />} />
       </Route>
 
-      {/* Website opens directly on Dashboard */}
-      <Route
-        path="/"
-        element={<Navigate to="/dashboard" replace />}
-      />
-
-      {/* Unknown pages also go to Dashboard */}
-      <Route
-        path="*"
-        element={<Navigate to="/dashboard" replace />}
-      />
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
 
-export default App;
+export default function App() {
+  return <AppRoutes />;
+}
